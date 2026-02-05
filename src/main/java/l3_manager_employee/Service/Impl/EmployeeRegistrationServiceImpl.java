@@ -17,11 +17,13 @@ import l3_manager_employee.commons.exception.ErrorCodeMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.ObjectMapper;
 
-import java.sql.Timestamp;
+// === ĐÃ SỬA IMPORT ĐÚNG ===
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+// ==========================
+
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -33,12 +35,9 @@ public class EmployeeRegistrationServiceImpl implements EmployeeRegistrationServ
 
     @Override
     public boolean checkReadyForRegistration(Long userId, Long employeeId) {
-
         StoredProcedureQuery result = repository.callCheckReady(userId, employeeId);
-
         Boolean ready = (Boolean) result.getOutputParameterValue("o_ready");
         String errorCode = (String) result.getOutputParameterValue("o_error_code");
-
         if (Boolean.FALSE.equals(ready)) {
             throw ErrorCodeMapper.map(errorCode);
         }
@@ -46,8 +45,10 @@ public class EmployeeRegistrationServiceImpl implements EmployeeRegistrationServ
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class) // Thêm dòng này
+    @Transactional(rollbackFor = Exception.class)
     public EmployeeRegistrationResponse createRegistration(Long userId, Long employeeId, EmployeeRegistrationRequest request) {
+        try {
+            // ObjectMapper ném ra JsonProcessingException nên phải try-catch
             String json = objectMapper.writeValueAsString(request);
 
             StoredProcedureQuery result = repository.callCreateRegistration(userId, employeeId, json);
@@ -55,21 +56,22 @@ public class EmployeeRegistrationServiceImpl implements EmployeeRegistrationServ
             Long from_id = (formIdObj != null) ? ((Number) formIdObj).longValue() : null;
             Boolean success = (Boolean) result.getOutputParameterValue("o_success");
             String errorCode = (String) result.getOutputParameterValue("o_error_code");
+
             if (Boolean.FALSE.equals(success)) {
-                throw  ErrorCodeMapper.map(errorCode);
+                throw ErrorCodeMapper.map(errorCode);
             }
             return new EmployeeRegistrationResponse(from_id);
 
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error converting request to JSON", e);
+        }
     }
-
 
     @Override
     public void submitRegistration(Long userId, Long formId, EmployeeCertificateSubmitRequest req) {
         StoredProcedureQuery result = repository.submitRegistration(userId, formId, req);
-
         Boolean success = (Boolean) result.getOutputParameterValue("o_success");
         String errorCode = (String) result.getOutputParameterValue("o_error_code");
-
         if (Boolean.FALSE.equals(success)) {
             throw ErrorCodeMapper.map(errorCode);
         }
@@ -78,10 +80,8 @@ public class EmployeeRegistrationServiceImpl implements EmployeeRegistrationServ
     @Override
     public void processRegistration(Long leaderId, ProcessEmployeeRegistrationRequest request) {
         StoredProcedureQuery result = repository.processRegistration(leaderId, request.getFormId(), request.getAction(), request.getNote(), request.getActionDate());
-
         Boolean success = (Boolean) result.getOutputParameterValue("o_success");
         String errorCode = (String) result.getOutputParameterValue("o_error_code");
-
         if (Boolean.FALSE.equals(success)) {
             throw ErrorCodeMapper.map(errorCode);
         }
@@ -107,7 +107,6 @@ public class EmployeeRegistrationServiceImpl implements EmployeeRegistrationServ
                                 .build();
                     })
                     .toList();
-
         } catch (Exception ex) {
             Throwable root = ex.getCause() != null ? ex.getCause() : ex;
             throw ErrorCodeMapper.map(root.getMessage());
@@ -116,43 +115,39 @@ public class EmployeeRegistrationServiceImpl implements EmployeeRegistrationServ
 
     @Override
     public List<UserManagerResponse> getListManagers() {
-
         List<Object[]> results = repository.getManagerList();
-
         return results.stream()
                 .map(obj -> UserManagerResponse.builder()
-                                .id(((Number) obj[0]).longValue())      // id
-                                .username((String) obj[1])
-                                .fullname((String) obj[2])// username
-                                .role((String) obj[3])                  // role
-                                .status((String) obj[4])
-                                .createdAt((LocalDateTime) obj[5])
-                                .team((String) obj[6])                  // team
-                                .build()
+                        .id(((Number) obj[0]).longValue())
+                        .username((String) obj[1])
+                        .fullname((String) obj[2])
+                        .role((String) obj[3])
+                        .status((String) obj[4])
+                        .createdAt((LocalDateTime) obj[5])
+                        .team((String) obj[6])
+                        .build()
                 )
                 .toList();
     }
+
     @Override
     public EmployeeListRegistrationResponse getByEmployee(Long userId, Long employeeId) {
         Object result = repository.callFnGetByEmployee(employeeId);
-
         if (result == null) {
             throw new AppException(ErrorCode.SYSTEM_ERROR_DB);
         }
-
         try {
             return objectMapper.readValue(
                     result.toString(),
                     EmployeeListRegistrationResponse.class
             );
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error parsing JSON response", e);
         }
     }
 
     @Override
     public void update(Long userId, EmployeeRegistrationUpdateRequest req) {
-
         StoredProcedureQuery sp = repository.callUpdateRegistration(
                 req.getId(),
                 req.getResume(),
@@ -161,12 +156,10 @@ public class EmployeeRegistrationServiceImpl implements EmployeeRegistrationServ
                 req.getJob_position(),
                 userId
         );
-
         Boolean success = (Boolean) sp.getOutputParameterValue("o_success");
         String errorCode = (String) sp.getOutputParameterValue("o_error");
-
         if (!Boolean.TRUE.equals(success)) {
             throw ErrorCodeMapper.map(errorCode);
         }
-}}
-;
+    }
+}

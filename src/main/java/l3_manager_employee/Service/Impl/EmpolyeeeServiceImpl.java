@@ -13,15 +13,17 @@ import l3_manager_employee.commons.exception.AppException;
 import l3_manager_employee.commons.exception.ErrorCode;
 import l3_manager_employee.commons.exception.ErrorCodeMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.core.type.TypeReference;
-import tools.jackson.databind.ObjectMapper;
+
+// === ĐÃ SỬA IMPORT ĐÚNG ===
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+// ==========================
 
 import java.sql.Date;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,13 +36,14 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
     private final EmployeeRepository repository;
     private final ObjectMapper objectMapper;
     private final DetailRespository detailRepository;
-    private int i = 0;
-
 
     @Override
     public EmployeeResponse createEmployee(Long userId, EmployeeRequest req) {
-
-        StoredProcedureQuery sp = repository.callCreateEmployee(userId, req.getFullName(), req.getGender(), req.getDateOfBirth(), req.getAddress(), req.getTeam(), req.getAvatarUrl(), req.getIdentityNumber(), req.getPhone(), req.getEmail());
+        StoredProcedureQuery sp = repository.callCreateEmployee(
+                userId, req.getFullName(), req.getGender(), req.getDateOfBirth(),
+                req.getAddress(), req.getTeam(), req.getAvatarUrl(),
+                req.getIdentityNumber(), req.getPhone(), req.getEmail()
+        );
         Long employeeId = (Long) sp.getOutputParameterValue("o_employee_id");
         Boolean success = (Boolean) sp.getOutputParameterValue("o_success");
         String errorCode = (String) sp.getOutputParameterValue("o_error_code");
@@ -48,110 +51,105 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
         if (Boolean.FALSE.equals(success)) {
             throw ErrorCodeMapper.map(errorCode);
         }
-
         return new EmployeeResponse(employeeId);
     }
 
-
     @Override
-    @SneakyThrows
-    @Transactional// Tự động xử lý JsonProcessingException
+    @Transactional
     public void addCertificates(Long userId, Long employeeId, List<EmployeeCertificateRequest> certificates) {
-
-        // 1. Convert Object -> JSON String
-        String certificatesJson = objectMapper.writeValueAsString(certificates);
-
-        // 2. Gọi Repository để chạy Procedure
-        StoredProcedureQuery result = repository.callAddEmployeeCertificate(userId, employeeId, certificatesJson);
-        Boolean success = (Boolean) result.getOutputParameterValue("o_success");
-        String errorCode = (String) result.getOutputParameterValue("o_error_code");
-
-        // 3. Kiểm tra kết quả
-        if (Boolean.FALSE.equals(success)) {
-            throw ErrorCodeMapper.map(errorCode);
+        try {
+            String certificatesJson = objectMapper.writeValueAsString(certificates);
+            StoredProcedureQuery result = repository.callAddEmployeeCertificate(userId, employeeId, certificatesJson);
+            Boolean success = (Boolean) result.getOutputParameterValue("o_success");
+            String errorCode = (String) result.getOutputParameterValue("o_error_code");
+            if (Boolean.FALSE.equals(success)) {
+                throw ErrorCodeMapper.map(errorCode);
+            }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error converting certificates to JSON", e);
         }
     }
 
     @Override
     public void addEmpolyeeFamily(Long userId, Long certId, List<EmployeeFamilyRequest> EmployeeFamily) {
-        String EmployeeFamilyJson = objectMapper.writeValueAsString(EmployeeFamily);
-        StoredProcedureQuery result = repository.callAddEmployeeFamily(userId, certId, EmployeeFamilyJson);
-        Boolean success = (Boolean) result.getOutputParameterValue("o_success");
-        String errorCode = (String) result.getOutputParameterValue("o_error_code");
-        if (Boolean.FALSE.equals(success)) {
-            throw ErrorCodeMapper.map(errorCode);
+        try {
+            String EmployeeFamilyJson = objectMapper.writeValueAsString(EmployeeFamily);
+            StoredProcedureQuery result = repository.callAddEmployeeFamily(userId, certId, EmployeeFamilyJson);
+            Boolean success = (Boolean) result.getOutputParameterValue("o_success");
+            String errorCode = (String) result.getOutputParameterValue("o_error_code");
+            if (Boolean.FALSE.equals(success)) {
+                throw ErrorCodeMapper.map(errorCode);
+            }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error converting family info to JSON", e);
         }
     }
 
     @Override
     public void updateEmpolyeeCertificate(Long userId, Long certId, EmployeeCertificateRequest req) {
-        String EmployeeCertificateJson = objectMapper.writeValueAsString(req);
-        StoredProcedureQuery result = repository.callUpdateEmployeeCertificate(userId, certId, EmployeeCertificateJson);
-        Boolean success = (Boolean) result.getOutputParameterValue("o_success");
-        String errorCode = (String) result.getOutputParameterValue("o_error_code");
-        if (Boolean.FALSE.equals(success)) {
-            log.error("Root exception message family: {}",errorCode );
-            throw ErrorCodeMapper.map(errorCode);
+        try {
+            String EmployeeCertificateJson = objectMapper.writeValueAsString(req);
+            StoredProcedureQuery result = repository.callUpdateEmployeeCertificate(userId, certId, EmployeeCertificateJson);
+            Boolean success = (Boolean) result.getOutputParameterValue("o_success");
+            String errorCode = (String) result.getOutputParameterValue("o_error_code");
+            if (Boolean.FALSE.equals(success)) {
+                log.error("Root exception message family: {}", errorCode);
+                throw ErrorCodeMapper.map(errorCode);
+            }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error converting certificate update to JSON", e);
         }
     }
 
     @Override
     public void updateEmployeeFamily(Long userId, Long familyId, EmployeeFamilyRequest req) {
-        String EmployeeFamilyJson = objectMapper.writeValueAsString(req);
-        StoredProcedureQuery result = repository.callUpdateEmployeeFamily(userId, familyId, EmployeeFamilyJson);
-        Boolean success = (Boolean) result.getOutputParameterValue("o_success");
-        String errorCode = (String) result.getOutputParameterValue("o_error_code");
-        if (Boolean.FALSE.equals(success)) {
-            log.error("Root exception  fml: {}",errorCode );
-            throw ErrorCodeMapper.map(errorCode);
+        try {
+            String EmployeeFamilyJson = objectMapper.writeValueAsString(req);
+            StoredProcedureQuery result = repository.callUpdateEmployeeFamily(userId, familyId, EmployeeFamilyJson);
+            Boolean success = (Boolean) result.getOutputParameterValue("o_success");
+            String errorCode = (String) result.getOutputParameterValue("o_error_code");
+            if (Boolean.FALSE.equals(success)) {
+                log.error("Root exception fml: {}", errorCode);
+                throw ErrorCodeMapper.map(errorCode);
+            }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error converting family update to JSON", e);
         }
-
     }
 
     @Override
     public void updateEmployeeInfo(Long userId, Long employeeId, EmployeeUpdateRequest request) {
-        String employeeJson = objectMapper.writeValueAsString(request);
-
-        StoredProcedureQuery result =
-                repository.callUpdateEmployeeInfo(userId, employeeId, employeeJson);
-
-        Boolean success = (Boolean) result.getOutputParameterValue("o_success");
-        String errorCode = (String) result.getOutputParameterValue("o_error_code");
-
-        if (Boolean.FALSE.equals(success)) {
-            throw ErrorCodeMapper.map(errorCode);
+        try {
+            String employeeJson = objectMapper.writeValueAsString(request);
+            StoredProcedureQuery result = repository.callUpdateEmployeeInfo(userId, employeeId, employeeJson);
+            Boolean success = (Boolean) result.getOutputParameterValue("o_success");
+            String errorCode = (String) result.getOutputParameterValue("o_error_code");
+            if (Boolean.FALSE.equals(success)) {
+                throw ErrorCodeMapper.map(errorCode);
+            }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error converting employee info to JSON", e);
         }
     }
 
     @Override
     public void deleteEmployee(Long userId, Long employeeId) {
-
-        StoredProcedureQuery result =
-                repository.callDeleteEmployee(userId, employeeId);
-
+        StoredProcedureQuery result = repository.callDeleteEmployee(userId, employeeId);
         Boolean success = (Boolean) result.getOutputParameterValue("o_success");
         String errorCode = (String) result.getOutputParameterValue("o_error_code");
-
         if (Boolean.FALSE.equals(success)) {
             throw ErrorCodeMapper.map(errorCode);
         }
     }
 
-
     @Override
     public EmployeeDetailResponse getEmployeeDetail(Long userId, Long employeeId) {
-
         try {
-            List<Object[]> result =
-                    detailRepository.callFnEmployeeDetail(userId, employeeId);
-
+            List<Object[]> result = detailRepository.callFnEmployeeDetail(userId, employeeId);
             if (result.isEmpty()) {
                 throw new AppException(ErrorCode.EMP_NOT_FOUND);
-
             }
-
             Object[] r = result.get(0);
-
             EmployeeDetailResponse res = new EmployeeDetailResponse();
             res.setId(((Number) r[0]).longValue());
             res.setEmployeeCode((String) r[1]);
@@ -174,9 +172,7 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
             res.setCreatedAt(((LocalDateTime) r[18]));
             res.setUpdatedBy(r[19] != null ? ((Number) r[19]).longValue() : null);
             res.setUpdatedAt(((LocalDateTime) r[20]));
-
             return res;
-
         } catch (AppException ae) {
             throw ae;
         } catch (Exception ex) {
@@ -190,7 +186,6 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
     public List<EmployeeFamilyRelationResponse> getFamilyRelations(Long userId, Long employeeId) {
         try {
             List<Object[]> result = detailRepository.getFamilyRelations(userId, employeeId);
-
             return result.stream().map(r ->
                     EmployeeFamilyRelationResponse.builder()
                             .id(((Number) r[0]).intValue())
@@ -207,7 +202,6 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
                             .updatedAt(r[11] != null ? (LocalDateTime) r[11] : null)
                             .build()
             ).toList();
-
         } catch (Exception ex) {
             Throwable root = ex.getCause() != null ? ex.getCause() : ex;
             log.error("Root exception message: {}", root.getMessage(), root);
@@ -218,9 +212,7 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
     @Override
     public List<EmployeeCertificateDetailResponse> getDetailEmployeeCertificate(Long userId, Long employeeId) {
         try {
-            List<Object[]> result =
-                    detailRepository.getDetailEmpolyeeCertificates(userId, employeeId);
-
+            List<Object[]> result = detailRepository.getDetailEmpolyeeCertificates(userId, employeeId);
             return result.stream().map(r ->
                     EmployeeCertificateDetailResponse.builder()
                             .id(((Number) r[0]).longValue())
@@ -235,7 +227,6 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
                             .updatedAt(r[9] != null ? (LocalDateTime) r[9] : null)
                             .build()
             ).toList();
-
         } catch (Exception ex) {
             Throwable root = ex.getCause() != null ? ex.getCause() : ex;
             log.error("Root exception message: {}", root.getMessage(), root);
@@ -247,7 +238,6 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
     public List<EmployeeListResponse> getEmployeeListByUser(Long userId) {
         try {
             List<Object[]> result = repository.getEmployeeListByUser(userId);
-
             return result.stream().map(r -> {
                 int i = 0;
                 return EmployeeListResponse.builder()
@@ -258,57 +248,50 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
                         .status((String) r[i++])
                         .build();
             }).toList();
-
         } catch (Exception ex) {
             Throwable root = ex.getCause() != null ? ex.getCause() : ex;
             throw ErrorCodeMapper.map(root.getMessage());
         }
     }
+
     @Override
     public EmployeeViewDetailResponse viewEmployeeDetail(Long userId, Long employeeId) {
-
         Object result = repository.getEmployeeViewDetail(userId, employeeId);
-
         if (result == null) {
             throw new RuntimeException("Không tìm thấy nhân viên hoặc không có quyền xem");
         }
-
         try {
-            // Parse jsonb -> Map
-            Map<String, Object> data =
-                    objectMapper.readValue(result.toString(), new TypeReference<>() {});
-
+            Map<String, Object> data = objectMapper.readValue(
+                    result.toString(),
+                    new TypeReference<Map<String, Object>>() {}
+            );
             return EmployeeViewDetailResponse.builder()
                     .employee(data.get("employee"))
                     .certificates(data.get("certificates"))
                     .familyRelations(data.get("family_relations"))
                     .build();
-
-        } catch (Exception e) {
+        } catch (JsonProcessingException e) {
             throw new RuntimeException("Lỗi parse EmployeeViewDetailResponse", e);
         }
     }
+
     @Override
     public List<EmployeeListResponse> getEmployeeListApprovedByUser(Long userId) {
-    try {
-        List<Object[]> result =
-                repository.getEmployeeListApprovedByUser(userId);
-
-        return result.stream().map(r ->
-                EmployeeListResponse.builder()
-                        .id(((Number) r[0]).longValue())
-                        .employeeCode((String) r[1])
-                        .fullName((String) r[2])
-                        .team((String) r[3])
-                        .status((String) r[4])
-                        .build()
-        ).toList();
-
-    } catch (Exception ex) {
-        Throwable root = ex.getCause() != null ? ex.getCause() : ex;
-        log.error("Root exception message: {}", root.getMessage(), root);
-        throw ErrorCodeMapper.map(root.getMessage());
-    }}
+        try {
+            List<Object[]> result = repository.getEmployeeListApprovedByUser(userId);
+            return result.stream().map(r ->
+                    EmployeeListResponse.builder()
+                            .id(((Number) r[0]).longValue())
+                            .employeeCode((String) r[1])
+                            .fullName((String) r[2])
+                            .team((String) r[3])
+                            .status((String) r[4])
+                            .build()
+            ).toList();
+        } catch (Exception ex) {
+            Throwable root = ex.getCause() != null ? ex.getCause() : ex;
+            log.error("Root exception message: {}", root.getMessage(), root);
+            throw ErrorCodeMapper.map(root.getMessage());
+        }
+    }
 }
-
-

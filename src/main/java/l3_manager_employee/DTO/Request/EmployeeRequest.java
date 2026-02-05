@@ -13,7 +13,6 @@ public class EmployeeRequest {
     private String fullName;
 
     private String gender;
-    @NotNull(message = "Ngày sinh không được để trống")
     private LocalDate dateOfBirth;
 
     private String address;
