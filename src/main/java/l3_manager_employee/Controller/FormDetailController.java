@@ -8,7 +8,6 @@ import l3_manager_employee.Service.EmployeeFormService;
 import l3_manager_employee.commons.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/form-detail")
 @RequiredArgsConstructor
