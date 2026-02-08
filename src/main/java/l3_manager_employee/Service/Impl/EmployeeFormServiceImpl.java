@@ -136,26 +136,60 @@ public class EmployeeFormServiceImpl implements EmployeeFormService {
     @Override
     public EmployeeRegistrationDetailResponse getDetailRegistration(Long userId, Long formId) {
         List<Object[]> result = detailRespository.getRegistrationDetail(userId, formId);
-        if (result.isEmpty()) throw new AppException(ErrorCode.EMP_NOT_FOUND);
+
+        // Check nếu không tìm thấy bản ghi
+        if (result.isEmpty()) {
+            throw new AppException(ErrorCode.EMP_NOT_FOUND);
+        }
 
         Object[] r = result.get(0);
 
         return EmployeeRegistrationDetailResponse.builder()
-                .id(((Number) r[10]).longValue())             // id
-                .employeeId(((Number) r[5]).longValue())     // employee_id
-                .resume((String) r[7])                       // resume
-                .cvUrl((String) r[0])                        // cv_url
-                .note((String) r[1])                         // note
-                .jobPosition((String) r[11])                 // job_position
-                .receiverId(r[2] != null ? ((Number) r[2]).longValue() : null) // receiver_id
-                .status((String) r[9])                       // status
-                .submitDate(toLocalDateTime(r[13]))          // submit_date
-                .approveDate(toLocalDateTime(r[3]))           // approve_date
-                .leaderNote((String) r[4])                   // leader_note
-                .createdBy(((Number) r[14]).longValue())     // created_by
-                .createdAt(toLocalDateTime(r[12]))          // created_at
-                .updatedBy(r[8] != null ? ((Number) r[8]).longValue() : null) // updated_by
-                .updatedAt(toLocalDateTime(r[6]))           // updated_at
+                // 1. id (Cột 1 trong DB - Index 0)
+                .id(((Number) r[0]).longValue())
+
+                // 2. employeeId (Cột 2 trong DB - Index 1)
+                .employeeId(((Number) r[1]).longValue())
+
+                // 3. resume (Cột 3 trong DB - Index 2)
+                .resume((String) r[2])
+
+                // 4. cvUrl (Cột 4 trong DB - Index 3)
+                .cvUrl((String) r[3])
+
+                // 5. note (Cột 5 trong DB - Index 4)
+                .note((String) r[4])
+
+                // 6. jobPosition (Cột 6 trong DB - Index 5)
+                .jobPosition((String) r[5])
+
+                // 7. receiverId (Cột 7 trong DB - Index 6) - Có thể Null
+                .receiverId(r[6] != null ? ((Number) r[6]).longValue() : null)
+
+                // 8. status (Cột 8 trong DB - Index 7)
+                .status((String) r[7])
+
+                // 9. submitDate (Cột 9 trong DB - Index 8)
+                .submitDate(toLocalDateTime(r[8]))
+
+                // 10. approveDate (Cột 10 trong DB - Index 9)
+                .approveDate(toLocalDateTime(r[9]))
+
+                // 11. leaderNote (Cột 11 trong DB - Index 10)
+                .leaderNote((String) r[10])
+
+                // 12. createdBy (Cột 12 trong DB - Index 11)
+                .createdBy(((Number) r[11]).longValue())
+
+                // 13. createdAt (Cột 13 trong DB - Index 12)
+                .createdAt(toLocalDateTime(r[12]))
+
+                // 14. updatedBy (Cột 14 trong DB - Index 13) - Có thể Null
+                .updatedBy(r[13] != null ? ((Number) r[13]).longValue() : null)
+
+                // 15. updatedAt (Cột 15 trong DB - Index 14)
+                .updatedAt(toLocalDateTime(r[14]))
+
                 .build();
     }
 
