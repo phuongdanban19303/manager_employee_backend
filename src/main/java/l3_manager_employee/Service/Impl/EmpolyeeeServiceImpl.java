@@ -17,13 +17,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-// === ĐÃ SỬA IMPORT ĐÚNG ===
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
-// ==========================
 
 import java.sql.Date;
+import java.sql.Timestamp; // Import thêm cái này
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,17 +36,32 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
     private final ObjectMapper objectMapper;
     private final DetailRespository detailRepository;
 
+    // === SỬA LẠI ĐOẠN NÀY ===
     private LocalDate toLocalDate(Object o) {
-        return o == null ? null : ((java.sql.Date) o).toLocalDate();
+        if (o == null) return null;
+        if (o instanceof java.sql.Date) {
+            return ((java.sql.Date) o).toLocalDate();
+        }
+        if (o instanceof java.sql.Timestamp) {
+            return ((java.sql.Timestamp) o).toLocalDateTime().toLocalDate();
+        }
+        return (LocalDate) o;
     }
 
     private LocalDateTime toLocalDateTime(Object o) {
-        return o == null ? null : (LocalDateTime) o;
+        if (o == null) return null;
+        // Kiểm tra nếu là Timestamp thì convert sang LocalDateTime
+        if (o instanceof java.sql.Timestamp) {
+            return ((java.sql.Timestamp) o).toLocalDateTime();
+        }
+        // Trường hợp hiếm hoi nó đã là LocalDateTime rồi
+        return (LocalDateTime) o;
     }
-
+    // ========================
 
     @Override
     public EmployeeResponse createEmployee(Long userId, EmployeeRequest req) {
+        // ... (Giữ nguyên code cũ)
         StoredProcedureQuery sp = repository.callCreateEmployee(
                 userId, req.getFullName(), req.getGender(), req.getDateOfBirth(),
                 req.getAddress(), req.getTeam(), req.getAvatarUrl(),
@@ -58,7 +72,7 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
         String errorCode = (String) sp.getOutputParameterValue("o_error_code");
 
         if (Boolean.FALSE.equals(success)) {
-            log.error("Create Employee Failed. Error Code from DB: {}", errorCode); // In lỗi ra log
+            log.error("Create Employee Failed. Error Code from DB: {}", errorCode);
             throw ErrorCodeMapper.map(errorCode);
         }
         return new EmployeeResponse(employeeId);
@@ -163,6 +177,7 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
             Object[] r = result.get(0);
             EmployeeDetailResponse res = new EmployeeDetailResponse();
 
+            // Lưu ý: Đảm bảo index khớp với hàm SQL
             res.setId(((Number) r[0]).longValue());
             res.setEmployeeCode((String) r[1]);
             res.setFullName((String) r[2]);
@@ -194,6 +209,7 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
             throw ErrorCodeMapper.map(root.getMessage());
         }
     }
+
     @Override
     public List<EmployeeFamilyRelationResponse> getFamilyRelations(Long userId, Long employeeId) {
         try {
@@ -221,9 +237,6 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
         }
     }
 
-    /* =======================
-       Employee certificates
-       ======================= */
     @Override
     public List<EmployeeCertificateDetailResponse> getDetailEmployeeCertificate(Long userId, Long employeeId) {
         try {
@@ -248,6 +261,7 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
             throw ErrorCodeMapper.map(root.getMessage());
         }
     }
+
     @Override
     public List<EmployeeListResponse> getEmployeeListByUser(Long userId) {
         try {
@@ -267,6 +281,7 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
             throw ErrorCodeMapper.map(root.getMessage());
         }
     }
+
     @Override
     public EmployeeViewDetailResponse viewEmployeeDetail(Long userId, Long employeeId) {
         Object result = repository.getEmployeeViewDetail(userId, employeeId);
@@ -296,6 +311,7 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
             throw new AppException(ErrorCode.SYSTEM_ERROR);
         }
     }
+
     @Override
     public List<EmployeeListResponse> getEmployeeListApprovedByUser(Long userId) {
         try {
@@ -315,5 +331,4 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
             throw ErrorCodeMapper.map(root.getMessage());
         }
     }
-
 }
