@@ -136,24 +136,26 @@ public class EmployeeFormServiceImpl implements EmployeeFormService {
     @Override
     public EmployeeRegistrationDetailResponse getDetailRegistration(Long userId, Long formId) {
         List<Object[]> result = detailRespository.getRegistrationDetail(userId, formId);
+        if (result.isEmpty()) throw new AppException(ErrorCode.EMP_NOT_FOUND);
+
         Object[] r = result.get(0);
-        int i = 0;
+
         return EmployeeRegistrationDetailResponse.builder()
-                .id(((Number) r[i++]).longValue())
-                .employeeId(((Number) r[i++]).longValue())
-                .resume((String) r[i++])
-                .cvUrl((String) r[i++])
-                .note((String) r[i++])
-                .jobPosition((String) r[i++])
-                .receiverId(((Number) r[i++]).longValue())
-                .status((String) r[i++])
-                .submitDate(toLocalDateTime(r[i++]))
-                .approveDate(toLocalDateTime(r[i++]))
-                .leaderNote((String) r[i++])
-                .createdBy(((Number) r[i++]).longValue())
-                .createdAt(toLocalDateTime(r[i++]))
-                .updatedBy(r[i++] != null ? ((Number) r[i - 1]).longValue() : null)
-                .updatedAt(toLocalDateTime(r[i - 1]))
+                .id(((Number) r[10]).longValue())             // id
+                .employeeId(((Number) r[5]).longValue())     // employee_id
+                .resume((String) r[7])                       // resume
+                .cvUrl((String) r[0])                        // cv_url
+                .note((String) r[1])                         // note
+                .jobPosition((String) r[11])                 // job_position
+                .receiverId(r[2] != null ? ((Number) r[2]).longValue() : null) // receiver_id
+                .status((String) r[9])                       // status
+                .submitDate(toLocalDateTime(r[13]))          // submit_date
+                .approveDate(toLocalDateTime(r[3]))           // approve_date
+                .leaderNote((String) r[4])                   // leader_note
+                .createdBy(((Number) r[14]).longValue())     // created_by
+                .createdAt(toLocalDateTime(r[12]))          // created_at
+                .updatedBy(r[8] != null ? ((Number) r[8]).longValue() : null) // updated_by
+                .updatedAt(toLocalDateTime(r[6]))           // updated_at
                 .build();
     }
 
