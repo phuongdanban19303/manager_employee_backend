@@ -37,6 +37,15 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
     private final ObjectMapper objectMapper;
     private final DetailRespository detailRepository;
 
+    private LocalDate toLocalDate(Object o) {
+        return o == null ? null : ((java.sql.Date) o).toLocalDate();
+    }
+
+    private LocalDateTime toLocalDateTime(Object o) {
+        return o == null ? null : (LocalDateTime) o;
+    }
+
+
     @Override
     public EmployeeResponse createEmployee(Long userId, EmployeeRequest req) {
         StoredProcedureQuery sp = repository.callCreateEmployee(
@@ -150,13 +159,15 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
             if (result.isEmpty()) {
                 throw new AppException(ErrorCode.EMP_NOT_FOUND);
             }
+
             Object[] r = result.get(0);
             EmployeeDetailResponse res = new EmployeeDetailResponse();
+
             res.setId(((Number) r[0]).longValue());
             res.setEmployeeCode((String) r[1]);
             res.setFullName((String) r[2]);
             res.setGender((String) r[3]);
-            res.setDateOfBirth(r[4] != null ? ((LocalDate) r[4]) : null);
+            res.setDateOfBirth(toLocalDate(r[4]));
             res.setAddress((String) r[5]);
             res.setTeam((String) r[6]);
             res.setAvatarUrl((String) r[7]);
@@ -164,25 +175,25 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
             res.setPhone((String) r[9]);
             res.setEmail((String) r[10]);
             res.setStatus((String) r[11]);
-            res.setStatusUpdatedAt(r[12] != null ? ((LocalDateTime) r[12]) : null);
-            res.setTerminatedAt(r[13] != null ? ((LocalDate) r[13]) : null);
+            res.setStatusUpdatedAt(toLocalDateTime(r[12]));
+            res.setTerminatedAt(toLocalDate(r[13]));
             res.setTerminationReason((String) r[14]);
-            res.setArchiveDate(r[15] != null ? ((Date) r[15]).toLocalDate() : null);
+            res.setArchiveDate(toLocalDate(r[15]));
             res.setArchiveNumber((String) r[16]);
             res.setCreatedBy(((Number) r[17]).longValue());
-            res.setCreatedAt(((LocalDateTime) r[18]));
+            res.setCreatedAt(toLocalDateTime(r[18]));
             res.setUpdatedBy(r[19] != null ? ((Number) r[19]).longValue() : null);
-            res.setUpdatedAt(((LocalDateTime) r[20]));
+            res.setUpdatedAt(toLocalDateTime(r[20]));
+
             return res;
         } catch (AppException ae) {
             throw ae;
         } catch (Exception ex) {
             Throwable root = ex.getCause() != null ? ex.getCause() : ex;
-            log.error(root.getMessage());
+            log.error(root.getMessage(), root);
             throw ErrorCodeMapper.map(root.getMessage());
         }
     }
-
     @Override
     public List<EmployeeFamilyRelationResponse> getFamilyRelations(Long userId, Long employeeId) {
         try {
@@ -193,23 +204,26 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
                             .employeeId(((Number) r[1]).intValue())
                             .full_name((String) r[2])
                             .gender((Integer) r[3])
-                            .date_of_birth(r[4] != null ? (LocalDate) r[4] : null)
+                            .date_of_birth(toLocalDate(r[4]))
                             .identity_card_number((String) r[5])
                             .relationship((String) r[6])
                             .address((String) r[7])
                             .createdBy(((Number) r[8]).longValue())
-                            .createdAt((LocalDateTime) r[9])
+                            .createdAt(toLocalDateTime(r[9]))
                             .updatedBy(r[10] != null ? ((Number) r[10]).longValue() : null)
-                            .updatedAt(r[11] != null ? (LocalDateTime) r[11] : null)
+                            .updatedAt(toLocalDateTime(r[11]))
                             .build()
             ).toList();
         } catch (Exception ex) {
             Throwable root = ex.getCause() != null ? ex.getCause() : ex;
-            log.error("Root exception message: {}", root.getMessage(), root);
+            log.error("Root exception", root);
             throw ErrorCodeMapper.map(root.getMessage());
         }
     }
 
+    /* =======================
+       Employee certificates
+       ======================= */
     @Override
     public List<EmployeeCertificateDetailResponse> getDetailEmployeeCertificate(Long userId, Long employeeId) {
         try {
@@ -219,22 +233,21 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
                             .id(((Number) r[0]).longValue())
                             .employeeId(((Number) r[1]).longValue())
                             .name((String) r[2])
-                            .issue_date(r[3] != null ? (LocalDate) r[3] : null)
+                            .issue_date(toLocalDate(r[3]))
                             .content((String) r[4])
                             .field_url((String) r[5])
                             .createdBy(((Number) r[6]).longValue())
-                            .createdAt((LocalDateTime) r[7])
+                            .createdAt(toLocalDateTime(r[7]))
                             .updatedBy(r[8] != null ? ((Number) r[8]).longValue() : null)
-                            .updatedAt(r[9] != null ? (LocalDateTime) r[9] : null)
+                            .updatedAt(toLocalDateTime(r[9]))
                             .build()
             ).toList();
         } catch (Exception ex) {
             Throwable root = ex.getCause() != null ? ex.getCause() : ex;
-            log.error("Root exception message: {}", root.getMessage(), root);
+            log.error("Root exception", root);
             throw ErrorCodeMapper.map(root.getMessage());
         }
     }
-
     @Override
     public List<EmployeeListResponse> getEmployeeListByUser(Long userId) {
         try {
@@ -254,28 +267,35 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
             throw ErrorCodeMapper.map(root.getMessage());
         }
     }
-
     @Override
     public EmployeeViewDetailResponse viewEmployeeDetail(Long userId, Long employeeId) {
         Object result = repository.getEmployeeViewDetail(userId, employeeId);
+
         if (result == null) {
-            throw new RuntimeException("Không tìm thấy nhân viên hoặc không có quyền xem");
+            throw new AppException(ErrorCode.EMP_NOT_FOUND);
         }
+
         try {
+            String json = result instanceof String
+                    ? (String) result
+                    : result.toString();
+
             Map<String, Object> data = objectMapper.readValue(
-                    result.toString(),
+                    json,
                     new TypeReference<Map<String, Object>>() {}
             );
+
             return EmployeeViewDetailResponse.builder()
                     .employee(data.get("employee"))
                     .certificates(data.get("certificates"))
                     .familyRelations(data.get("family_relations"))
                     .build();
+
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Lỗi parse EmployeeViewDetailResponse", e);
+            log.error("Parse employee view detail error", e);
+            throw new AppException(ErrorCode.SYSTEM_ERROR);
         }
     }
-
     @Override
     public List<EmployeeListResponse> getEmployeeListApprovedByUser(Long userId) {
         try {
@@ -291,8 +311,9 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
             ).toList();
         } catch (Exception ex) {
             Throwable root = ex.getCause() != null ? ex.getCause() : ex;
-            log.error("Root exception message: {}", root.getMessage(), root);
+            log.error("Root exception", root);
             throw ErrorCodeMapper.map(root.getMessage());
         }
     }
+
 }
