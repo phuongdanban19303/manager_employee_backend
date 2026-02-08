@@ -25,10 +25,24 @@ import java.util.List;
 public class EmployeeFormServiceImpl implements EmployeeFormService {
 
     private final FromGeneralRepository fromGeneralRepository;
-    private final DetailRespository DetailRespository;
+    private final DetailRespository detailRespository;
+
+    // === HÀM HELPER CHUYỂN ĐỔI "BẤT TỬ" ===
+    private LocalDateTime toLocalDateTime(Object o) {
+        if (o == null) return null;
+        if (o instanceof java.sql.Timestamp) return ((java.sql.Timestamp) o).toLocalDateTime();
+        return (LocalDateTime) o;
+    }
+
+    private LocalDate toLocalDate(Object o) {
+        if (o == null) return null;
+        if (o instanceof java.sql.Date) return ((java.sql.Date) o).toLocalDate();
+        if (o instanceof java.sql.Timestamp) return ((java.sql.Timestamp) o).toLocalDateTime().toLocalDate();
+        return (LocalDate) o;
+    }
 
     @Override
-    @Transactional(rollbackFor = Exception.class) // Thêm dòng này
+    @Transactional(rollbackFor = Exception.class)
     public CreateFormResponse createPromotion(Long userId, PromotionRequest dto) {
         StoredProcedureQuery result = fromGeneralRepository.createPromotion(userId, dto);
         Boolean ready = (Boolean) result.getOutputParameterValue("o_success");
@@ -39,11 +53,11 @@ public class EmployeeFormServiceImpl implements EmployeeFormService {
             log.error(errorCode);
             throw (ErrorCodeMapper.map(errorCode));
         }
-         return new CreateFormResponse(formID);
+        return new CreateFormResponse(formID);
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class) // Thêm dòng này
+    @Transactional(rollbackFor = Exception.class)
     public CreateFormResponse createProposal(Long userId, ProposalRequest dto) {
         StoredProcedureQuery result = fromGeneralRepository.createProposal(userId, dto);
         Boolean ready = (Boolean) result.getOutputParameterValue("o_success");
@@ -57,7 +71,7 @@ public class EmployeeFormServiceImpl implements EmployeeFormService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class) // Thêm dòng này
+    @Transactional(rollbackFor = Exception.class)
     public CreateFormResponse createSalaryIncrease(Long userId, SalaryIncreaseRequest dto) {
         StoredProcedureQuery result = fromGeneralRepository.createSalaryIncrease(userId, dto);
         Boolean ready = (Boolean) result.getOutputParameterValue("o_success");
@@ -73,89 +87,57 @@ public class EmployeeFormServiceImpl implements EmployeeFormService {
 
     @Override
     public void submitPromotion(Long userId, SubmitFormRequest req) {
-        StoredProcedureQuery result =
-                fromGeneralRepository.submitPromotion(userId, req.getFormId(), req.getReceiverId());
-        Boolean ready = (Boolean) result.getOutputParameterValue("o_success");
-        String errorCode = (String) result.getOutputParameterValue("o_error_code");
-        if (Boolean.FALSE.equals(ready)) {
-            throw (ErrorCodeMapper.map(errorCode));
+        StoredProcedureQuery result = fromGeneralRepository.submitPromotion(userId, req.getFormId(), req.getReceiverId());
+        if (Boolean.FALSE.equals(result.getOutputParameterValue("o_success"))) {
+            throw ErrorCodeMapper.map((String) result.getOutputParameterValue("o_error_code"));
         }
-
     }
 
     @Override
     public void processPromotion(Long managerId, ProcessFormRequest req) {
-        StoredProcedureQuery result =
-                fromGeneralRepository.processPromotion(managerId, req.getFormId(),
-                        req.getAction(), req.getLeaderNote());
-        Boolean ready = (Boolean) result.getOutputParameterValue("o_success");
-        String errorCode = (String) result.getOutputParameterValue("o_error_code");
-        if (Boolean.FALSE.equals(ready)) {
-            throw (ErrorCodeMapper.map(errorCode));
+        StoredProcedureQuery result = fromGeneralRepository.processPromotion(managerId, req.getFormId(), req.getAction(), req.getLeaderNote());
+        if (Boolean.FALSE.equals(result.getOutputParameterValue("o_success"))) {
+            throw ErrorCodeMapper.map((String) result.getOutputParameterValue("o_error_code"));
         }
-
     }
 
     @Override
     public void submitProposal(Long userId, SubmitFormRequest req) {
-        StoredProcedureQuery result =
-                fromGeneralRepository.submitProposal(userId, req.getFormId(), req.getReceiverId());
-        Boolean ready = (Boolean) result.getOutputParameterValue("o_success");
-        String errorCode = (String) result.getOutputParameterValue("o_error_code");
-        if (Boolean.FALSE.equals(ready)) {
-            throw (ErrorCodeMapper.map(errorCode));
+        StoredProcedureQuery result = fromGeneralRepository.submitProposal(userId, req.getFormId(), req.getReceiverId());
+        if (Boolean.FALSE.equals(result.getOutputParameterValue("o_success"))) {
+            throw ErrorCodeMapper.map((String) result.getOutputParameterValue("o_error_code"));
         }
-
     }
 
     @Override
     public void processProposal(Long managerId, ProcessFormRequest req) {
-        StoredProcedureQuery result =
-                fromGeneralRepository.processProposal(managerId, req.getFormId(),
-                        req.getAction(), req.getLeaderNote());
-        Boolean ready = (Boolean) result.getOutputParameterValue("o_success");
-        String errorCode = (String) result.getOutputParameterValue("o_error_code");
-        if (Boolean.FALSE.equals(ready)) {
-            throw (ErrorCodeMapper.map(errorCode));
+        StoredProcedureQuery result = fromGeneralRepository.processProposal(managerId, req.getFormId(), req.getAction(), req.getLeaderNote());
+        if (Boolean.FALSE.equals(result.getOutputParameterValue("o_success"))) {
+            throw ErrorCodeMapper.map((String) result.getOutputParameterValue("o_error_code"));
         }
-
     }
 
     @Override
     public void submitSalaryIncrease(Long userId, SubmitFormRequest req) {
-        StoredProcedureQuery result =
-                fromGeneralRepository.submitSalaryIncrease(userId, req.getFormId(), req.getReceiverId());
-        Boolean ready = (Boolean) result.getOutputParameterValue("o_success");
-        String errorCode = (String) result.getOutputParameterValue("o_error_code");
-        if (Boolean.FALSE.equals(ready)) {
-            throw (ErrorCodeMapper.map(errorCode));
+        StoredProcedureQuery result = fromGeneralRepository.submitSalaryIncrease(userId, req.getFormId(), req.getReceiverId());
+        if (Boolean.FALSE.equals(result.getOutputParameterValue("o_success"))) {
+            throw ErrorCodeMapper.map((String) result.getOutputParameterValue("o_error_code"));
         }
-
     }
 
     @Override
     public void processSalaryIncrease(Long managerId, ProcessFormRequest req) {
-        StoredProcedureQuery result =
-                fromGeneralRepository.processSalaryIncrease(managerId, req.getFormId(),
-                        req.getAction(), req.getLeaderNote());
-        Boolean ready = (Boolean) result.getOutputParameterValue("o_success");
-        String errorCode = (String) result.getOutputParameterValue("o_error_code");
-        if (Boolean.FALSE.equals(ready)) {
-            throw (ErrorCodeMapper.map(errorCode));
+        StoredProcedureQuery result = fromGeneralRepository.processSalaryIncrease(managerId, req.getFormId(), req.getAction(), req.getLeaderNote());
+        if (Boolean.FALSE.equals(result.getOutputParameterValue("o_success"))) {
+            throw ErrorCodeMapper.map((String) result.getOutputParameterValue("o_error_code"));
         }
     }
 
     @Override
-    public EmployeeRegistrationDetailResponse getDetailRegistration(
-            Long userId,
-            Long formId
-    ) {
-        List<Object[]> result =
-                DetailRespository.getRegistrationDetail(userId, formId);
-
+    public EmployeeRegistrationDetailResponse getDetailRegistration(Long userId, Long formId) {
+        List<Object[]> result = detailRespository.getRegistrationDetail(userId, formId);
         Object[] r = result.get(0);
         int i = 0;
-
         return EmployeeRegistrationDetailResponse.builder()
                 .id(((Number) r[i++]).longValue())
                 .employeeId(((Number) r[i++]).longValue())
@@ -165,37 +147,21 @@ public class EmployeeFormServiceImpl implements EmployeeFormService {
                 .jobPosition((String) r[i++])
                 .receiverId(((Number) r[i++]).longValue())
                 .status((String) r[i++])
-                .submitDate((LocalDateTime) r[i++])
-                .approveDate((LocalDateTime) r[i++])
+                .submitDate(toLocalDateTime(r[i++]))
+                .approveDate(toLocalDateTime(r[i++]))
                 .leaderNote((String) r[i++])
                 .createdBy(((Number) r[i++]).longValue())
-                .createdAt((LocalDateTime) r[i++])
-                .updatedBy(
-                        r[i++] != null
-                                ? ((Number) r[i - 1]).longValue()
-                                : null
-                )
-                .updatedAt(
-                        r[i++] != null
-                                ? (LocalDateTime) r[i - 1]
-                                : null
-                )
+                .createdAt(toLocalDateTime(r[i++]))
+                .updatedBy(r[i++] != null ? ((Number) r[i - 1]).longValue() : null)
+                .updatedAt(toLocalDateTime(r[i - 1]))
                 .build();
     }
 
-    /* ================= PROMOTION ================= */
-
     @Override
-    public PromotionDetailResponse getDetailPromotionDetai(
-            Long userId,
-            Long formId
-    ) {
-        List<Object[]> result =
-                DetailRespository.getPromotionDetail(userId, formId);
-
+    public PromotionDetailResponse getDetailPromotionDetai(Long userId, Long formId) {
+        List<Object[]> result = detailRespository.getPromotionDetail(userId, formId);
         Object[] r = result.get(0);
         int i = 0;
-
         return PromotionDetailResponse.builder()
                 .id(((Number) r[i++]).longValue())
                 .employeeId(((Number) r[i++]).longValue())
@@ -204,37 +170,21 @@ public class EmployeeFormServiceImpl implements EmployeeFormService {
                 .reason((String) r[i++])
                 .receiverId(((Number) r[i++]).longValue())
                 .status((String) r[i++])
-                .submitDate((LocalDateTime) r[i++])
-                .approveDate((LocalDateTime) r[i++])
+                .submitDate(toLocalDateTime(r[i++]))
+                .approveDate(toLocalDateTime(r[i++]))
                 .leaderNote((String) r[i++])
                 .createdBy(((Number) r[i++]).longValue())
-                .createdAt((LocalDateTime) r[i++])
-                .updatedBy(
-                        r[i++] != null
-                                ? ((Number) r[i - 1]).longValue()
-                                : null
-                )
-                .updatedAt(
-                        r[i++] != null
-                                ? (LocalDateTime) r[i - 1]
-                                : null
-                )
+                .createdAt(toLocalDateTime(r[i++]))
+                .updatedBy(r[i++] != null ? ((Number) r[i - 1]).longValue() : null)
+                .updatedAt(toLocalDateTime(r[i - 1]))
                 .build();
     }
 
-    /* ================= PROPOSAL ================= */
-
     @Override
-    public ProposalDetailResponse getDetailProposal(
-            Long userId,
-            Long formId
-    ) {
-        List<Object[]> result =
-                DetailRespository.getProposalDetail(userId, formId);
-
+    public ProposalDetailResponse getDetailProposal(Long userId, Long formId) {
+        List<Object[]> result = detailRespository.getProposalDetail(userId, formId);
         Object[] r = result.get(0);
         int i = 0;
-
         return ProposalDetailResponse.builder()
                 .id(((Number) r[i++]).longValue())
                 .employeeId(((Number) r[i++]).longValue())
@@ -242,37 +192,21 @@ public class EmployeeFormServiceImpl implements EmployeeFormService {
                 .detail((String) r[i++])
                 .receiverId(((Number) r[i++]).longValue())
                 .status((String) r[i++])
-                .submitDate((LocalDateTime) r[i++])
-                .approveDate((LocalDateTime) r[i++])
+                .submitDate(toLocalDateTime(r[i++]))
+                .approveDate(toLocalDateTime(r[i++]))
                 .leaderNote((String) r[i++])
                 .createdBy(((Number) r[i++]).longValue())
-                .createdAt((LocalDateTime) r[i++])
-                .updatedBy(
-                        r[i++] != null
-                                ? ((Number) r[i - 1]).longValue()
-                                : null
-                )
-                .updatedAt(
-                        r[i++] != null
-                                ? (LocalDateTime) r[i - 1]
-                                : null
-                )
+                .createdAt(toLocalDateTime(r[i++]))
+                .updatedBy(r[i++] != null ? ((Number) r[i - 1]).longValue() : null)
+                .updatedAt(toLocalDateTime(r[i - 1]))
                 .build();
     }
 
-    /* ================= SALARY INCREASE ================= */
-
     @Override
-    public SalaryIncreaseDetailResponse getDetailIncrease(
-            Long userId,
-            Long formId
-    ) {
-        List<Object[]> result =
-                DetailRespository.getSalaryIncreaseDetail(userId, formId);
-
+    public SalaryIncreaseDetailResponse getDetailIncrease(Long userId, Long formId) {
+        List<Object[]> result = detailRespository.getSalaryIncreaseDetail(userId, formId);
         Object[] r = result.get(0);
         int i = 0;
-
         return SalaryIncreaseDetailResponse.builder()
                 .id(((Number) r[i++]).longValue())
                 .employeeId(((Number) r[i++]).longValue())
@@ -282,245 +216,151 @@ public class EmployeeFormServiceImpl implements EmployeeFormService {
                 .reason((String) r[i++])
                 .receiverId(((Number) r[i++]).longValue())
                 .status((String) r[i++])
-                .submitDate((LocalDateTime) r[i++])
-                .approveDate((LocalDateTime) r[i++])
+                .submitDate(toLocalDateTime(r[i++]))
+                .approveDate(toLocalDateTime(r[i++]))
                 .leaderNote((String) r[i++])
                 .createdBy(((Number) r[i++]).longValue())
-                .createdAt((LocalDateTime) r[i++])
-                .updatedBy(
-                        r[i++] != null
-                                ? ((Number) r[i - 1]).longValue()
-                                : null
-                )
-                .updatedAt(
-                        r[i++] != null
-                                ? (LocalDateTime) r[i - 1]
-                                : null
-                )
+                .createdAt(toLocalDateTime(r[i++]))
+                .updatedBy(r[i++] != null ? ((Number) r[i - 1]).longValue() : null)
+                .updatedAt(toLocalDateTime(r[i - 1]))
                 .build();
     }
+
     @Override
     public List<FormPromotionResponse> getPromotionByEmployee(Long employeeId) {
-        try {
-            List<Object[]> result = fromGeneralRepository.getFormPromotionByEmployee(employeeId);
-
-            return result.stream().map(r ->
-                    FormPromotionResponse.builder()
-                            .id(((Number) r[0]).longValue())
-                            .employeeId(((Number) r[1]).longValue())
-                            .oldPosition((String) r[2])
-                            .newPosition((String) r[3])
-                            .reason((String) r[4])
-                            .receiverId(r[5] != null ? ((Number) r[5]).longValue() : null)
-                            .status((String) r[6])
-                            .submitDate((LocalDateTime) r[7])
-                            .approveDate((LocalDateTime) r[8])
-                            .leaderNote((String) r[9])
-                            .createdAt((LocalDateTime) r[10])
-                            .build()
-            ).toList();
-
-        } catch (Exception ex) {
-            Throwable root = ex.getCause() != null ? ex.getCause() : ex;
-            throw ErrorCodeMapper.map(root.getMessage());
-        }
+        List<Object[]> result = fromGeneralRepository.getFormPromotionByEmployee(employeeId);
+        return result.stream().map(r -> FormPromotionResponse.builder()
+                .id(((Number) r[0]).longValue())
+                .employeeId(((Number) r[1]).longValue())
+                .oldPosition((String) r[2])
+                .newPosition((String) r[3])
+                .reason((String) r[4])
+                .receiverId(r[5] != null ? ((Number) r[5]).longValue() : null)
+                .status((String) r[6])
+                .submitDate(toLocalDateTime(r[7]))
+                .approveDate(toLocalDateTime(r[8]))
+                .leaderNote((String) r[9])
+                .createdAt(toLocalDateTime(r[10]))
+                .build()).toList();
     }
+
     @Override
     public List<FormProposalResponse> getProposalByEmployee(Long employeeId) {
-        try {
-            List<Object[]> result = fromGeneralRepository.getFormProposalByEmployee(employeeId);
-
-            return result.stream().map(r ->
-                    FormProposalResponse.builder()
-                            .id(((Number) r[0]).longValue())
-                            .employeeId(((Number) r[1]).longValue())
-                            .content((String) r[2])
-                            .detail((String) r[3])
-                            .receiverId(r[4] != null ? ((Number) r[4]).longValue() : null)
-                            .status((String) r[5])
-                            .submitDate((LocalDateTime) r[6])
-                            .approveDate((LocalDateTime) r[7])
-                            .leaderNote((String) r[8])
-                            .createdAt((LocalDateTime) r[9])
-                            .build()
-            ).toList();
-
-        } catch (Exception ex) {
-            Throwable root = ex.getCause() != null ? ex.getCause() : ex;
-            throw ErrorCodeMapper.map(root.getMessage());
-        }
+        List<Object[]> result = fromGeneralRepository.getFormProposalByEmployee(employeeId);
+        return result.stream().map(r -> FormProposalResponse.builder()
+                .id(((Number) r[0]).longValue())
+                .employeeId(((Number) r[1]).longValue())
+                .content((String) r[2])
+                .detail((String) r[3])
+                .receiverId(r[4] != null ? ((Number) r[4]).longValue() : null)
+                .status((String) r[5])
+                .submitDate(toLocalDateTime(r[6]))
+                .approveDate(toLocalDateTime(r[7]))
+                .leaderNote((String) r[8])
+                .createdAt(toLocalDateTime(r[9]))
+                .build()).toList();
     }
+
     @Override
     public List<FormSalaryIncreaseResponse> getSalaryIncreaseByEmployee(Long employeeId) {
-        try {
-            List<Object[]> result = fromGeneralRepository.getFormSalaryIncreaseByEmployee(employeeId);
-
-            return result.stream().map(r ->
-                    FormSalaryIncreaseResponse.builder()
-                            .id(((Number) r[0]).longValue())
-                            .employeeId(((Number) r[1]).longValue())
-                            .times(r[2] != null ? ((Number) r[2]).intValue() : null)
-                            .oldLevel((String) r[3])
-                            .newLevel((String) r[4])
-                            .reason((String) r[5])
-                            .receiverId(r[6] != null ? ((Number) r[6]).longValue() : null)
-                            .status((String) r[7])
-                            .submitDate((LocalDateTime) r[8])
-                            .approveDate((LocalDateTime) r[9])
-                            .leaderNote((String) r[10])
-                            .createdAt((LocalDateTime) r[11])
-                            .build()
-            ).toList();
-
-        } catch (Exception ex) {
-            Throwable root = ex.getCause() != null ? ex.getCause() : ex;
-            throw ErrorCodeMapper.map(root.getMessage());
-        }
-    }
-    @Override
-    public void updatePromotion(
-            Long userId,
-            Long formId,
-            PromotionUpdateRequest req
-    ) {
-        StoredProcedureQuery result =
-                fromGeneralRepository.updatePromotion(userId, formId, req);
-
-        Boolean success =
-                (Boolean) result.getOutputParameterValue("o_success");
-
-        String errorCode =
-                (String) result.getOutputParameterValue("o_message");
-
-        if (Boolean.FALSE.equals(success)) {
-            log.error("updatePromotion failed: {}", errorCode);
-            throw ErrorCodeMapper.map(errorCode);
-        }
-    }
-    @Override
-    public void updateProposal(
-            Long userId,
-            Long formId,
-            ProposalUpdateRequest req
-    ) {
-        StoredProcedureQuery result =
-                fromGeneralRepository.callUpdateProposal(userId, formId, req);
-
-        Boolean success =
-                (Boolean) result.getOutputParameterValue("o_success");
-
-        String errorCode =
-                (String) result.getOutputParameterValue("o_message");
-
-        if (Boolean.FALSE.equals(success)) {
-            log.error("updateProposal failed: {}", errorCode);
-            throw ErrorCodeMapper.map(errorCode);
-        }
-    }
-    @Override
-    public void updateSalaryIncrease(
-            Long userId,
-            Long formId,
-            SalaryIncreaseUpdateRequest req
-    ) {
-        StoredProcedureQuery result =
-                fromGeneralRepository.callUpdateSalaryIncrease(userId, formId, req);
-
-        Boolean success =
-                (Boolean) result.getOutputParameterValue("o_success");
-
-        String errorCode =
-                (String) result.getOutputParameterValue("o_message");
-
-        if (Boolean.FALSE.equals(success)) {
-            log.error("updateSalaryIncrease failed: {}", errorCode);
-            throw ErrorCodeMapper.map(errorCode);
-        }
+        List<Object[]> result = fromGeneralRepository.getFormSalaryIncreaseByEmployee(employeeId);
+        return result.stream().map(r -> FormSalaryIncreaseResponse.builder()
+                .id(((Number) r[0]).longValue())
+                .employeeId(((Number) r[1]).longValue())
+                .times(r[2] != null ? ((Number) r[2]).intValue() : null)
+                .oldLevel((String) r[3])
+                .newLevel((String) r[4])
+                .reason((String) r[5])
+                .receiverId(r[6] != null ? ((Number) r[6]).longValue() : null)
+                .status((String) r[7])
+                .submitDate(toLocalDateTime(r[8]))
+                .approveDate(toLocalDateTime(r[9]))
+                .leaderNote((String) r[10])
+                .createdAt(toLocalDateTime(r[11]))
+                .build()).toList();
     }
 
     @Override
     public List<PromotionPendingResponse> getPendingPromotions(Long userId) {
-        try {
-            List<Object[]> result = fromGeneralRepository.getPendingpromotionList(userId);
-
-            return result.stream()
-                    .map(r -> {
-                        int i = 0;
-                        return PromotionPendingResponse.builder()
-                                .formId(((Number) r[i++]).longValue())
-                                .employeeId(((Number) r[i++]).longValue())
-                                .employeeCode((String) r[i++])
-                                .employeeName((String) r[i++])
-                                .oldPosition((String) r[i++])
-                                .newPosition((String) r[i++])
-                                .receiverId(((Number) r[i++]).longValue())
-                                .status((String) r[i++])
-                                .submitDate((LocalDateTime) r[i++])
-                                .createdAt((LocalDateTime) r[i++])
-                                .build();
-                    })
-                    .toList();
-
-        } catch (Exception ex) {
-            Throwable root = ex.getCause() != null ? ex.getCause() : ex;
-            throw ErrorCodeMapper.map(root.getMessage());
-        }
+        List<Object[]> result = fromGeneralRepository.getPendingpromotionList(userId);
+        return result.stream().map(r -> {
+            int i = 0;
+            return PromotionPendingResponse.builder()
+                    .formId(((Number) r[i++]).longValue())
+                    .employeeId(((Number) r[i++]).longValue())
+                    .employeeCode((String) r[i++])
+                    .employeeName((String) r[i++])
+                    .oldPosition((String) r[i++])
+                    .newPosition((String) r[i++])
+                    .receiverId(((Number) r[i++]).longValue())
+                    .status((String) r[i++])
+                    .submitDate(toLocalDateTime(r[i++]))
+                    .createdAt(toLocalDateTime(r[i++]))
+                    .build();
+        }).toList();
     }
+
     @Override
     public List<ProposalPendingResponse> getPendingProposals(Long userId) {
-        try {
-            List<Object[]> result = fromGeneralRepository.getPendingproposalList(userId);
-
-            return result.stream()
-                    .map(r -> {
-                        int i = 0;
-                        return ProposalPendingResponse.builder()
-                                .formId(((Number) r[i++]).longValue())
-                                .employeeId(((Number) r[i++]).longValue())
-                                .employeeCode((String) r[i++])
-                                .employeeName((String) r[i++])
-                                .content((String) r[i++])
-                                .receiverId(((Number) r[i++]).longValue())
-                                .status((String) r[i++])
-                                .submitDate((LocalDateTime) r[i++])
-                                .createdAt((LocalDateTime) r[i++])
-                                .build();
-                    })
-                    .toList();
-
-        } catch (Exception ex) {
-            Throwable root = ex.getCause() != null ? ex.getCause() : ex;
-            throw ErrorCodeMapper.map(root.getMessage());
-        }
+        List<Object[]> result = fromGeneralRepository.getPendingproposalList(userId);
+        return result.stream().map(r -> {
+            int i = 0;
+            return ProposalPendingResponse.builder()
+                    .formId(((Number) r[i++]).longValue())
+                    .employeeId(((Number) r[i++]).longValue())
+                    .employeeCode((String) r[i++])
+                    .employeeName((String) r[i++])
+                    .content((String) r[i++])
+                    .receiverId(((Number) r[i++]).longValue())
+                    .status((String) r[i++])
+                    .submitDate(toLocalDateTime(r[i++]))
+                    .createdAt(toLocalDateTime(r[i++]))
+                    .build();
+        }).toList();
     }
+
     @Override
     public List<SalaryIncreasePendingResponse> getPendingSalaryIncreases(Long userId) {
-        try {
-            List<Object[]> result = fromGeneralRepository.getPendingsalaryList(userId);
+        List<Object[]> result = fromGeneralRepository.getPendingsalaryList(userId);
+        return result.stream().map(r -> {
+            int i = 0;
+            return SalaryIncreasePendingResponse.builder()
+                    .formId(((Number) r[i++]).longValue())
+                    .employeeId(((Number) r[i++]).longValue())
+                    .employeeCode((String) r[i++])
+                    .employeeName((String) r[i++])
+                    .times(((Number) r[i++]).intValue())
+                    .oldLevel((String) r[i++])
+                    .newLevel((String) r[i++])
+                    .receiverId(((Number) r[i++]).longValue())
+                    .status((String) r[i++])
+                    .submitDate(toLocalDateTime(r[i++]))
+                    .createdAt(toLocalDateTime(r[i++]))
+                    .build();
+        }).toList();
+    }
 
-            return result.stream()
-                    .map(r -> {
-                        int i = 0;
-                        return SalaryIncreasePendingResponse.builder()
-                                .formId(((Number) r[i++]).longValue())
-                                .employeeId(((Number) r[i++]).longValue())
-                                .employeeCode((String) r[i++])
-                                .employeeName((String) r[i++])
-                                .times(((Number) r[i++]).intValue())
-                                .oldLevel((String) r[i++])
-                                .newLevel((String) r[i++])
-                                .receiverId(((Number) r[i++]).longValue())
-                                .status((String) r[i++])
-                                .submitDate((LocalDateTime) r[i++])
-                                .createdAt((LocalDateTime) r[i++])
-                                .build();
-                    })
-                    .toList();
+    @Override
+    public void updatePromotion(Long userId, Long formId, PromotionUpdateRequest req) {
+        StoredProcedureQuery result = fromGeneralRepository.updatePromotion(userId, formId, req);
+        if (Boolean.FALSE.equals(result.getOutputParameterValue("o_success"))) {
+            throw ErrorCodeMapper.map((String) result.getOutputParameterValue("o_message"));
+        }
+    }
 
-        } catch (Exception ex) {
-            Throwable root = ex.getCause() != null ? ex.getCause() : ex;
-            throw ErrorCodeMapper.map(root.getMessage());
+    @Override
+    public void updateProposal(Long userId, Long formId, ProposalUpdateRequest req) {
+        StoredProcedureQuery result = fromGeneralRepository.callUpdateProposal(userId, formId, req);
+        if (Boolean.FALSE.equals(result.getOutputParameterValue("o_success"))) {
+            throw ErrorCodeMapper.map((String) result.getOutputParameterValue("o_message"));
+        }
+    }
+
+    @Override
+    public void updateSalaryIncrease(Long userId, Long formId, SalaryIncreaseUpdateRequest req) {
+        StoredProcedureQuery result = fromGeneralRepository.callUpdateSalaryIncrease(userId, formId, req);
+        if (Boolean.FALSE.equals(result.getOutputParameterValue("o_success"))) {
+            throw ErrorCodeMapper.map((String) result.getOutputParameterValue("o_message"));
         }
     }
 }
-

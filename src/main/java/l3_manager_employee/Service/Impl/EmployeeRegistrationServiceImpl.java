@@ -118,12 +118,12 @@ public class EmployeeRegistrationServiceImpl implements EmployeeRegistrationServ
         List<Object[]> results = repository.getManagerList();
         return results.stream()
                 .map(obj -> UserManagerResponse.builder()
-                        .id(((Number) obj[0]).longValue())
+                        .id(((Number) obj[0]).longValue()) // Dùng Number cho chắc
                         .username((String) obj[1])
                         .fullname((String) obj[2])
                         .role((String) obj[3])
                         .status((String) obj[4])
-                        .createdAt((LocalDateTime) obj[5])
+                        .createdAt(toLocalDateTime(obj[5])) // <--- SỬA Ở ĐÂY
                         .team((String) obj[6])
                         .build()
                 )
@@ -161,5 +161,14 @@ public class EmployeeRegistrationServiceImpl implements EmployeeRegistrationServ
         if (!Boolean.TRUE.equals(success)) {
             throw ErrorCodeMapper.map(errorCode);
         }
+    }
+    private LocalDateTime toLocalDateTime(Object o) {
+        if (o == null) return null;
+        // Kiểm tra nếu là Timestamp thì convert sang LocalDateTime
+        if (o instanceof java.sql.Timestamp) {
+            return ((java.sql.Timestamp) o).toLocalDateTime();
+        }
+        // Trường hợp hiếm hoi nó đã là LocalDateTime rồi
+        return (LocalDateTime) o;
     }
 }
