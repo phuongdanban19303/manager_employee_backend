@@ -49,6 +49,7 @@ public class EmpolyeeeServiceImpl implements EmpolyeeService {
         String errorCode = (String) sp.getOutputParameterValue("o_error_code");
 
         if (Boolean.FALSE.equals(success)) {
+            log.error("Create Employee Failed. Error Code from DB: {}", errorCode); // In lỗi ra log
             throw ErrorCodeMapper.map(errorCode);
         }
         return new EmployeeResponse(employeeId);
