@@ -102,8 +102,8 @@ public class EmployeeRegistrationServiceImpl implements EmployeeRegistrationServ
                                 .jobPosition((String) r[i++])
                                 .receiverId(((Number) r[i++]).longValue())
                                 .status((String) r[i++])
-                                .submitDate((LocalDateTime) r[i++])
-                                .createdAt((LocalDateTime) r[i++])
+                                .submitDate((toLocalDateTime(r[i++])) )
+                                .createdAt((toLocalDateTime(r[i++])))
                                 .build();
                     })
                     .toList();
