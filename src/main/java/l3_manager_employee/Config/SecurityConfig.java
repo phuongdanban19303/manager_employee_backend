@@ -11,11 +11,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -27,33 +22,31 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // 1. Cấu hình CORS: Dùng cái bean corsConfigurationSource ở dưới
-        // Chỉ cần để defaults, Spring sẽ tự đi tìm cái Bean ở file CorsConfig.class
-        .cors(Customizer.withDefaults())
-                .csrf(AbstractHttpConfigurer::disable)
-                // ... các cấu hình khác giữ nguyên
-                // 2. Tắt CSRF (Bắt buộc khi dùng JWT/Stateless)
+                .cors(Customizer.withDefaults())
+
                 .csrf(AbstractHttpConfigurer::disable)
 
-                // 3. Session Stateless: Server không lưu trạng thái user
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
 
-                // 4. Phân quyền
                 .authorizeHttpRequests(auth -> auth
-                        // Cho phép method OPTIONS (để trình duyệt check CORS trước khi gửi request thật)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // Cho phép truy cập tự do vào các API login/register
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers(
+                                "/auth/login",
+                                "/auth/register",
+                                "/auth/refresh-token"
+                        ).permitAll()
 
-                        // Tất cả request còn lại phải có Token
                         .anyRequest().authenticated()
                 )
 
-                // 5. Thêm Filter JWT trước filter gốc của Spring
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                );
 
         return http.build();
     }
-
- }
+}

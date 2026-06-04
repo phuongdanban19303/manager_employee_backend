@@ -7,5 +7,10 @@ import java.util.Optional;
 
 public interface TblUserRepository extends JpaRepository<TblUser, Integer> {
 
+
     Optional<TblUser> findByUsernameAndStatus(String username, String status);
+
+    Optional<TblUser> findByUsername(String username);
+
+    boolean existsByUsername(String username);
 }

@@ -1,31 +1,54 @@
 BEGIN;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('28/12/2025 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 36367;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('29/12/2025 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 36533;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('29/12/2025 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 36576;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('29/12/2025 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 37025;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('02/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 37912;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('17/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 40424;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('14/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 41876;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('12/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 42068;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('13/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 42120;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('13/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 42126;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('13/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 42128;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('13/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 42222;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('13/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 42302;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('14/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 42509;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('13/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 42582;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('14/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 42583;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('14/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 42585;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('14/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 42666;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('13/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 42734;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('14/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 43107;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('14/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 43112;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('17/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 43738;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('17/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 44179;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('17/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 44180;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('17/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 45518;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('24/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 46365;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('25/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 46567;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('24/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 46636;
-UPDATE od_do_new SET updatedate = TO_TIMESTAMP('25/01/2026 00:00:00', 'DD/MM/YYYY HH24:MI:SS') WHERE so_id = 47160;
+
+INSERT INTO cp_callinglist_skill (config_id, org_id, cp_id, callinglist_id, skill_id, min_skill_level, updateby, updatedate)
+VALUES ((SELECT MAX(config_id) + 1 From cp_callinglist_skill ),18, 44, 1245, 2, 2, 0, now());
+
+INSERT INTO cp_callinglist_skill (config_id, org_id, cp_id, callinglist_id, skill_id, min_skill_level, updateby, updatedate)
+VALUES ((SELECT MAX(config_id) + 1 From cp_callinglist_skill ),18, 45, 1246, 2, 2, 0, now());
+
+INSERT INTO cp_callinglist_skill (config_id, org_id, cp_id, callinglist_id, skill_id, min_skill_level, updateby, updatedate)
+VALUES ((SELECT MAX(config_id) + 1 From cp_callinglist_skill ),18, 50, 1247, 2, 2, 0, now());
+
+INSERT INTO cp_callinglist_skill (config_id, org_id, cp_id, callinglist_id, skill_id, min_skill_level, updateby, updatedate)
+VALUES ((SELECT MAX(config_id) + 1 From cp_callinglist_skill ),18, 51, 1248, 2, 2, 0, now());
+
+INSERT INTO cp_callinglist_skill (config_id, org_id, cp_id, callinglist_id, skill_id, min_skill_level, updateby, updatedate)
+VALUES ((SELECT MAX(config_id) + 1 From cp_callinglist_skill ),18, 54, 1249, 2, 2, 0, now());
+
+INSERT INTO cp_callinglist_skill (config_id, org_id, cp_id, callinglist_id, skill_id, min_skill_level, updateby, updatedate)
+VALUES ((SELECT MAX(config_id) + 1 From cp_callinglist_skill ),18, 55, 1250, 2, 2, 0, now());
+
+INSERT INTO cp_callinglist_skill (config_id, org_id, cp_id, callinglist_id, skill_id, min_skill_level, updateby, updatedate)
+VALUES ((SELECT MAX(config_id) + 1 From cp_callinglist_skill ),18, 56, 1251, 2, 2, 0, now());
+
+INSERT INTO cp_callinglist_skill (config_id, org_id, cp_id, callinglist_id, skill_id, min_skill_level, updateby, updatedate)
+VALUES ((SELECT MAX(config_id) + 1 From cp_callinglist_skill ),18, 69, 1252, 2, 2, 0, now());
+
+INSERT INTO cp_callinglist_skill (config_id, org_id, cp_id, callinglist_id, skill_id, min_skill_level, updateby, updatedate)
+VALUES ((SELECT MAX(config_id) + 1 From cp_callinglist_skill ),18, 70, 1253, 2, 2, 0, now());
+
+INSERT INTO cp_callinglist_skill (config_id, org_id, cp_id, callinglist_id, skill_id, min_skill_level, updateby, updatedate)
+VALUES ((SELECT MAX(config_id) + 1 From cp_callinglist_skill ),18, 71, 1254, 2, 2, 0, now());
+
+INSERT INTO cp_callinglist_skill (config_id, org_id, cp_id, callinglist_id, skill_id, min_skill_level, updateby, updatedate)
+VALUES ((SELECT MAX(config_id) + 1 From cp_callinglist_skill ),18, 72, 1255, 2, 2, 0, now());
+
+INSERT INTO cp_callinglist_skill (config_id, org_id, cp_id, callinglist_id, skill_id, min_skill_level, updateby, updatedate)
+VALUES ((SELECT MAX(config_id) + 1 From cp_callinglist_skill ),18, 75, 1256, 2, 2, 0, now());
+
+INSERT INTO cp_callinglist_skill (config_id, org_id, cp_id, callinglist_id, skill_id, min_skill_level, updateby, updatedate)
+VALUES ((SELECT MAX(config_id) + 1 From cp_callinglist_skill ),18, 80, 1258, 2, 2, 0, now());
+
+INSERT INTO cp_callinglist_skill (config_id, org_id, cp_id, callinglist_id, skill_id, min_skill_level, updateby, updatedate)
+VALUES ((SELECT MAX(config_id) + 1 From cp_callinglist_skill ),18, 81, 1259, 2, 2, 0, now());
+
+INSERT INTO cp_callinglist_skill (config_id, org_id, cp_id, callinglist_id, skill_id, min_skill_level, updateby, updatedate)
+VALUES ((SELECT MAX(config_id) + 1 From cp_callinglist_skill ),18, 82, 1260, 2, 2, 0, now());
+
+INSERT INTO cp_callinglist_skill (config_id, org_id, cp_id, callinglist_id, skill_id, min_skill_level, updateby, updatedate)
+VALUES ((SELECT MAX(config_id) + 1 From cp_callinglist_skill ),18, 83, 1261, 2, 2, 0, now());
+
+INSERT INTO cp_callinglist_skill (config_id, org_id, cp_id, callinglist_id, skill_id, min_skill_level, updateby, updatedate)
+VALUES ((SELECT MAX(config_id) + 1 From cp_callinglist_skill ),18, 84, 1262, 2, 2, 0, now());
+
 COMMIT;

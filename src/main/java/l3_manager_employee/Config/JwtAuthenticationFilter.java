@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import l3_manager_employee.Config.redis.TokenRedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -20,6 +21,7 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final TokenRedisService tokenRedisService;
 
     @Override
     protected void doFilterInternal(
@@ -30,31 +32,47 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-            try {
-                Long userId = jwtUtil.getUserId(token);
-                String role = jwtUtil.getRole(token);
+        String token = authHeader.substring(7);
 
-                UserPrincipal principal = new UserPrincipal(userId, role);
-
-                Authentication authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                principal,
-                                null,
-                                List.of(new SimpleGrantedAuthority("ROLE_" + role))
-                        );
-
-                SecurityContextHolder.getContext()
-                        .setAuthentication(authentication);
-
-            } catch (Exception e) {
-                // Token sai → không set auth
+        try {
+            if (tokenRedisService.isAccessTokenBlacklisted(token)) {
+                filterChain.doFilter(request, response);
+                return;
             }
+
+            if (!jwtUtil.isValidToken(token)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            if (!jwtUtil.isAccessToken(token)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            Integer userId = jwtUtil.getUserId(token);
+            String role = jwtUtil.getRole(token);
+
+            UserPrincipal principal = new UserPrincipal(userId, role);
+
+            Authentication authentication =
+                    new UsernamePasswordAuthenticationToken(
+                            principal,
+                            null,
+                            List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                    );
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        } catch (Exception e) {
+            SecurityContextHolder.clearContext();
         }
 
         filterChain.doFilter(request, response);
     }
 }
-

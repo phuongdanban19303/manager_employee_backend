@@ -18,6 +18,19 @@ public enum ErrorCode {
     SYSTEM_ERROR(500000, "System error"),
     SYSTEM_ERROR_DB(500001, "Database error"),
 
+    /* ===== AUTH ===== */
+    USERNAME_REQUIRED(400100, "Username is required"),
+    PASSWORD_REQUIRED(400101, "Password is required"),
+    USERNAME_ALREADY_EXISTS(400102, "Username already exists"),
+    INVALID_USERNAME_OR_PASSWORD(401100, "Invalid username or password"),
+    ACCOUNT_DISABLED(403100, "Account is disabled"),
+    TOKEN_MISSING(401101, "Token is missing"),
+    TOKEN_INVALID(401102, "Token is invalid"),
+    TOKEN_EXPIRED(401103, "Token expired"),
+    REFRESH_TOKEN_INVALID(401104, "Refresh token invalid"),
+    REFRESH_TOKEN_EXPIRED(401105, "Refresh token expired"),
+    LOGOUT_FAILED(400103, "Logout failed"),
+
     /* ===== USER ===== */
     USER_NOT_FOUND(404000, "User not found"),
 
@@ -45,8 +58,8 @@ public enum ErrorCode {
 
     /* ===== UNKNOWN ===== */
     UNKNOWN_ERROR(500999, "Unknown error"),
-    FORM_NOT_WAIT_APPROV (500999,"FORM_NOT_WAIT_APPROVE");
+    FORM_NOT_WAIT_APPROV(400050, "Form not wait approve");
+
     private final int code;
     private final String message;
 }
-

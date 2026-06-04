@@ -14,7 +14,7 @@ public class SecurityUtils {
     }
 
     public static Long getUserId() {
-        return getCurrentUser().getUserId();
+        return getCurrentUser().getUserId().longValue();
     }
 
     public static String getRole() {
